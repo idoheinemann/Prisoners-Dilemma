@@ -14,6 +14,9 @@ def register(cls):
 
 
 class MetaPrisoner(type):
+    """
+    metaclass for prisoner bot
+    """
     def __new__(mcs, clsname, bases, attrs):
         newclass = super(MetaPrisoner, mcs).__new__(mcs, clsname, bases, attrs)
         register(newclass)  # here is your register function
@@ -27,9 +30,10 @@ class Prisoner(metaclass=MetaPrisoner):
     """
     prisoner base class
     all prisoner bots must inherit from the prisoner class
+
+    Note! constructor for this class cannot accept any arguments
+    Note! printing will not work when using do_turn
     """
-    def __init__(self):
-        pass
 
     def do_turn(self, history: list):
         """

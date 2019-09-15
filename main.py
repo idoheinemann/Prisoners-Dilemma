@@ -4,11 +4,11 @@ from contextlib import contextmanager
 import sys
 
 import dilemma_lib
-import prisoners
+from prisoners import BETRAY, LOYAL
 
 
-def raise_timeout():
-    raise TimeoutError("runtime limit exceeded")
+def raise_timeout(x1, x2):
+    raise TimeoutError("time limit passed")
 
 
 @contextmanager
@@ -20,34 +20,35 @@ def timeout(time):
 
     try:
         yield
-    except TimeoutError:
-        pass
     finally:
         # Unregister the signal so it won't be triggered
         # if the timeout is not reached.
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
 
-stdout, stderr = sys.stdout, sys.stderr
+def get_disable_prints():
+    stdout, stderr = sys.stdout, sys.stderr
+
+    class __T:
+        def __enter__(self):
+            sys.stdout, sys.stderr = None, None
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            sys.stdout, sys.stderr = stdout, stderr
+
+    return __T()
 
 
-class __T:
-    def __enter__(self):
-        sys.stdout, sys.stderr = None, None
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout, sys.stderr = stdout, stderr
+disable_prints = get_disable_prints()
 
 
-disable_prints = __T()
-
-
-def run_competition(turns_per_match=100, max_bot_runtime=1):
-    from prisoners import LOYAL, BETRAY
+def run_competition(bots=None, turns_per_match=100, max_bot_runtime=1):
     scores = {}
-    for i in dilemma_lib.registered_classes:
+    if bots is None:
+        bots = dilemma_lib.registered_classes
+    for i in bots:
         scores[i.__name__] = 0
-    for cls1, cls2 in combinations(dilemma_lib.registered_classes, 2):
+    for cls1, cls2 in combinations(bots, 2):
         print(f'{cls1.__name__} VS {cls2.__name__}')
         try:
             with disable_prints:
@@ -68,16 +69,14 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
                     with disable_prints:
                         c1 = p1.do_turn(h1)
             except BaseException as e:
-                print(f'{cls1.__name__} crushed')
-                print(e)
+                print(f'{cls1.__name__} crushed: {e}')
                 break
             try:
                 with timeout(max_bot_runtime):
                     with disable_prints:
                         c2 = p2.do_turn(h2)
             except BaseException as e:
-                print(f'{cls2.__name__} crushed')
-                print(e)
+                print(f'{cls2.__name__} crushed: {e}')
                 break
             if c1 is LOYAL and c2 is LOYAL:
                 scores[cls1.__name__] += 5
@@ -105,10 +104,15 @@ def show_scores(scores: dict):
     name_score_tuples = list(scores.items())
     name_score_tuples.sort(key=lambda x: x[1], reverse=True)
     try:
-        print(f'FIRST PLACE: {name_score_tuples[0][0]}')
-        print(f'SECOND PLACE: {name_score_tuples[1][0]}')
-        print(f'THIRD PLACE: {name_score_tuples[2][0]}')
-    except:
+        winners = name_score_tuples.copy()
+        for place in ['FIRST', 'SECOND', 'THIRD']:
+            print(f'{place} PLACE: {" & ".join(x[0] for x in winners if x[1] == winners[0][1])}')
+            if place == 'THIRD':
+                break
+            winners = [x for x in winners if x[1] != winners[0][1]]
+            if len(winners) == 0:
+                break
+    except IndexError:
         pass
     print()
     for index, (name, score) in enumerate(name_score_tuples):
