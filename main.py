@@ -30,9 +30,9 @@ def timeout(time):
 def run_competition(turns_per_match=100, max_bot_runtime=1):
     from prisoners import LOYAL, BETRAY
     scores = {}
-    for i in dilema_lib.registered_classes:
+    for i in dilemma_lib.registered_classes:
         scores[i.__name__] = 0
-    for cls1, cls2 in combinations(dilema_lib.registered_classes, 2):
+    for cls1, cls2 in combinations(dilemma_lib.registered_classes, 2):
         print(f'{cls1.__name__} VS {cls2.__name__}')
         try:
             p1 = cls1()
@@ -40,9 +40,9 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
             print(f'trying to create instance of {cls1.__name__} caused {e}')
             continue
         try:
-            p1 = cls1()
+            p2 = cls2()
         except BaseException as e:
-            print(f'trying to create instance of {cls1.__name__} caused {e}')
+            print(f'trying to create instance of {cls2.__name__} caused {e}')
             continue
         h1, h2 = [], []
         for i in range(turns_per_match):
