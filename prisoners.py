@@ -1,4 +1,4 @@
-from dilema_lib import *
+from dilema_lib import Prisoner, BETRAY, LOYAL
 
 
 class BetrayPrisoner(Prisoner):

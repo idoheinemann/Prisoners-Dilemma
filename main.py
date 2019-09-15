@@ -34,7 +34,16 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
         scores[i.__name__] = 0
     for cls1, cls2 in combinations(prisoners.registered_classes, 2):
         print(f'{cls1.__name__} VS {cls2.__name__}')
-        p1, p2 = cls1(), cls2()
+        try:
+            p1 = cls1()
+        except BaseException as e:
+            print(f'trying to create instance of {cls1.__name__} caused {e}')
+            continue
+        try:
+            p1 = cls1()
+        except BaseException as e:
+            print(f'trying to create instance of {cls1.__name__} caused {e}')
+            continue
         h1, h2 = [], []
         for i in range(turns_per_match):
             try:
