@@ -1,5 +1,4 @@
 registered_classes = []
-scores = []
 
 
 def register(cls):

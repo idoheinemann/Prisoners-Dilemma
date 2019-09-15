@@ -1,8 +1,8 @@
 from itertools import combinations
 import signal
 from contextlib import contextmanager
-import time
 
+import dilema_lib
 import prisoners
 
 
@@ -30,9 +30,9 @@ def timeout(time):
 def run_competition(turns_per_match=100, max_bot_runtime=1):
     from prisoners import LOYAL, BETRAY
     scores = {}
-    for i in prisoners.registered_classes:
+    for i in dilema_lib.registered_classes:
         scores[i.__name__] = 0
-    for cls1, cls2 in combinations(prisoners.registered_classes, 2):
+    for cls1, cls2 in combinations(dilema_lib.registered_classes, 2):
         print(f'{cls1.__name__} VS {cls2.__name__}')
         try:
             p1 = cls1()
