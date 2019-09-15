@@ -24,11 +24,22 @@ class MetaPrisoner(type):
 
 
 class Prisoner(metaclass=MetaPrisoner):
+    """
+    prisoner base class
+    all prisoner bots must inherit from the prisoner class
+    """
     def __init__(self):
         pass
 
     def do_turn(self, history: list):
-        pass
+        """
+        runs a single turn and return's the prisoners choice
+        :param history: a list of all the history so fur, each event is consisted of two elements, the first is your
+        action that turn, and the second is your opponent's action.
+        :type history: list[tuple[int, int]]
+        :return: the action for this turn, either LOYAL or BETRAY
+        """
+        raise NotImplementedError("Can't call abstract method Prisoner.do_turn")
 
 
 LOYAL = 0

@@ -1,6 +1,7 @@
 from itertools import combinations
 import signal
 from contextlib import contextmanager
+import sys
 
 import dilemma_lib
 import prisoners
@@ -27,6 +28,20 @@ def timeout(time):
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
 
+stdout, stderr = sys.stdout, sys.stderr
+
+
+class __T:
+    def __enter__(self):
+        sys.stdout, sys.stderr = None, None
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout, sys.stderr = stdout, stderr
+
+
+disable_prints = __T()
+
+
 def run_competition(turns_per_match=100, max_bot_runtime=1):
     from prisoners import LOYAL, BETRAY
     scores = {}
@@ -35,12 +50,14 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
     for cls1, cls2 in combinations(dilemma_lib.registered_classes, 2):
         print(f'{cls1.__name__} VS {cls2.__name__}')
         try:
-            p1 = cls1()
+            with disable_prints:
+                p1 = cls1()
         except BaseException as e:
             print(f'trying to create instance of {cls1.__name__} caused {e}')
             continue
         try:
-            p2 = cls2()
+            with disable_prints:
+                p2 = cls2()
         except BaseException as e:
             print(f'trying to create instance of {cls2.__name__} caused {e}')
             continue
@@ -48,14 +65,16 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
         for i in range(turns_per_match):
             try:
                 with timeout(max_bot_runtime):
-                    c1 = p1.do_turn(h1)
+                    with disable_prints:
+                        c1 = p1.do_turn(h1)
             except BaseException as e:
                 print(f'{cls1.__name__} crushed')
                 print(e)
                 break
             try:
                 with timeout(max_bot_runtime):
-                    c2 = p2.do_turn(h2)
+                    with disable_prints:
+                        c2 = p2.do_turn(h2)
             except BaseException as e:
                 print(f'{cls2.__name__} crushed')
                 print(e)
@@ -77,6 +96,8 @@ def run_competition(turns_per_match=100, max_bot_runtime=1):
                     print(f'{cls1.__name__} returned illegal output: {c1}')
                 else:
                     print(f'{cls2.__name__} returned illegal output: {c2}')
+            h1.append((c1, c2))
+            h2.append((c2, c1))
     return scores
 
 

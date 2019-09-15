@@ -20,8 +20,16 @@ class TitForTatPrisoner(Prisoner):
 
 class RandomPrisoner(Prisoner):
     def __init__(self):
+        Prisoner.__init__(self)
         import random
         self.random = random.Random()
 
     def do_turn(self, history: list):
         return self.random.choice([BETRAY, LOYAL])
+
+
+class BadAssTitForTatPrisoner(Prisoner):
+    def do_turn(self, history: list):
+        if len(history) == 0:
+            return BETRAY
+        return history[-1][0]
