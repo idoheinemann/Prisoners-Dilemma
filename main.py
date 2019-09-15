@@ -2,7 +2,7 @@ from itertools import combinations
 import signal
 from contextlib import contextmanager
 
-import dilema_lib
+import dilemma_lib
 import prisoners
 
 
