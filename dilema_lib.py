@@ -6,7 +6,7 @@ def register(cls):
     if not cls.__name__ == 'Prisoner':
         if hasattr(cls, 'do_turn'):
             if cls.do_turn != Prisoner.do_turn:
-                print(f'registering {cls.__name__}')
+                print(f'registering {cls.__name__}...')
                 registered_classes.append(cls)
             else:
                 print(f'class {cls.__name__} does not override Prisoner.do_turn')

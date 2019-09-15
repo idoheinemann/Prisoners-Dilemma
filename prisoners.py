@@ -11,8 +11,17 @@ class LoyalPrisoner(Prisoner):
         return LOYAL
 
 
-class DoWhatOtherDidBefore(Prisoner):
+class TitForTatPrisoner(Prisoner):
     def do_turn(self, history: list):
         if len(history) == 0:
             return LOYAL
         return history[-1][0]
+
+
+class RandomPrisoner(Prisoner):
+    def __init__(self):
+        import random
+        self.random = random.Random()
+
+    def do_turn(self, history: list):
+        return self.random.choice([BETRAY, LOYAL])

@@ -1,9 +1,14 @@
 from itertools import combinations
 import signal
 from contextlib import contextmanager
+import time
+
+import prisoners
+
 
 def raise_timeout():
     raise TimeoutError("runtime limit exceeded")
+
 
 @contextmanager
 def timeout(time):
@@ -22,24 +27,26 @@ def timeout(time):
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
 
-if __name__ == '__main__':
-    import prisoners
+def run_competition(turns_per_match=100, max_bot_runtime=1):
     from prisoners import LOYAL, BETRAY
     scores = {}
     for i in prisoners.registered_classes:
         scores[i.__name__] = 0
     for cls1, cls2 in combinations(prisoners.registered_classes, 2):
+        print(f'{cls1.__name__} VS {cls2.__name__}')
         p1, p2 = cls1(), cls2()
         h1, h2 = [], []
-        for i in range(100):
+        for i in range(turns_per_match):
             try:
-                c1 = p1.do_turn(h1)
+                with timeout(max_bot_runtime):
+                    c1 = p1.do_turn(h1)
             except BaseException as e:
                 print(f'{cls1.__name__} crushed')
                 print(e)
                 break
             try:
-                c2 = p2.do_turn(h2)
+                with timeout(max_bot_runtime):
+                    c2 = p2.do_turn(h2)
             except BaseException as e:
                 print(f'{cls2.__name__} crushed')
                 print(e)
@@ -61,4 +68,32 @@ if __name__ == '__main__':
                     print(f'{cls1.__name__} returned illegal output: {c1}')
                 else:
                     print(f'{cls2.__name__} returned illegal output: {c2}')
+    return scores
 
+
+def show_scores(scores: dict):
+    name_score_tuples = list(scores.items())
+    name_score_tuples.sort(key=lambda x: x[1], reverse=True)
+    try:
+        print(f'FIRST PLACE: {name_score_tuples[0][0]}')
+        print(f'SECOND PLACE: {name_score_tuples[1][0]}')
+        print(f'THIRD PLACE: {name_score_tuples[2][0]}')
+    except:
+        pass
+    print()
+    for index, (name, score) in enumerate(name_score_tuples):
+        print(f'{index + 1}. {name} => {score}')
+
+
+if __name__ == '__main__':
+    print('finished registering competitors')
+    print()
+    print()
+    print('running competition...')
+    results = run_competition()
+    print()
+    print()
+    print('finished running competitions')
+    print('calculating results...')
+    print()
+    show_scores(results)
