@@ -1,5 +1,6 @@
 import abc
 from typing import NewType
+from copy import copy
 
 
 def _():  # make the registered classes variable invisible
@@ -13,7 +14,7 @@ def _():  # make the registered classes variable invisible
             print(f'class {cls.__name__} does not have a method do_turn')
 
     def _get_registered_classes():
-        return __registered_classes
+        return copy(__registered_classes)
 
     return _register, _get_registered_classes
 
@@ -30,6 +31,7 @@ class PrisonerAction:
 
     def __repr__(self):
         return str(self)
+
 
 LOYAL = PrisonerAction('LOYAL')
 BETRAY = PrisonerAction('BETRAY')
