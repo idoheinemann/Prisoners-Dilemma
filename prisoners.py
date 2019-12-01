@@ -1,61 +1,44 @@
 from dilemma_lib import Prisoner, BETRAY, LOYAL
 
 
-class BetrayPrisoner(Prisoner):
-    def do_turn(self, history: list):
-        return BETRAY
-
-
 class LoyalPrisoner(Prisoner):
     def do_turn(self, history: list):
         return LOYAL
+
+
+class BetrayPrisoner(Prisoner):
+    def do_turn(self, history: list):
+        return BETRAY
 
 
 class TitForTatPrisoner(Prisoner):
     def do_turn(self, history: list):
         if len(history) == 0:
             return LOYAL
-        return history[-1][0]
+        return history[-1][1]
+
+
+class BetrayEveryOtherTurnPrisoner(Prisoner):
+    def do_turn(self, history: list):
+        if len(history) % 2 == 0:
+            return LOYAL
+        return BETRAY
 
 
 class RandomPrisoner(Prisoner):
     def __init__(self):
         import random
-        self.random = random.Random()
+        self.__random = random
 
     def do_turn(self, history: list):
-        return self.random.choice([BETRAY, LOYAL])
+        return self.__random.choice([BETRAY, LOYAL])
 
 
-class BadAssTitForTatPrisoner(Prisoner):
+class DoWhatOtherDidMostPrisoner(Prisoner):
     def do_turn(self, history: list):
-        if len(history) == 0:
-            return BETRAY
-        return history[-1][0]
-
-
-class MaxOutPrisoner(Prisoner):
-    def do_turn(self, history: list):
-        d = {BETRAY: 0, LOYAL: 0}
-        for _, choise in history:
-            d[choise] += 1
-        if d[BETRAY] > d[LOYAL]:
-            return BETRAY
-        return LOYAL
-
-
-class BadAssMaxOutPrisoner(Prisoner):
-    def do_turn(self, history: list):
-        d = {BETRAY: 0, LOYAL: 0}
-        for _, choise in history:
-            d[choise] += 1
-        if d[BETRAY] >= d[LOYAL]:
-            return BETRAY
-        return LOYAL
-
-
-class GrudgePrisoner(Prisoner):
-    def do_turn(self, history: list):
-        if BETRAY in [x[1] for x in history]:
-            return BETRAY
-        return LOYAL
+        what_other_did = {LOYAL: 0, BETRAY: 0}
+        for i in history:
+            what_other_did[i[1]] += 1
+        if what_other_did[LOYAL] >= what_other_did[BETRAY]:
+            return LOYAL
+        return BETRAY

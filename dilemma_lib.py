@@ -1,32 +1,41 @@
-registered_classes = []
+import abc
+from typing import NewType
 
 
-def register(cls):
-    if not cls.__name__ == 'Prisoner':
+def _():  # make the registered classes variable invisible
+    __registered_classes = []
+
+    def _register(cls):
         if hasattr(cls, 'do_turn'):
-            if cls.do_turn != Prisoner.do_turn:
-                print(f'registering {cls.__name__}...')
-                registered_classes.append(cls)
-            else:
-                print(f'class {cls.__name__} does not override Prisoner.do_turn')
+            print(f'registering {cls.__name__}...')
+            __registered_classes.append(cls)
         else:
             print(f'class {cls.__name__} does not have a method do_turn')
 
+    def _get_registered_classes():
+        return __registered_classes
 
-class MetaPrisoner(type):
-    """
-    metaclass for prisoner bot
-    """
-    def __new__(mcs, clsname, bases, attrs):
-        newclass = super(MetaPrisoner, mcs).__new__(mcs, clsname, bases, attrs)
-        register(newclass)  # here is your register function
-        return newclass
-
-    def __init__(cls, name, bases, attrs):
-        super().__init__(name, bases, attrs)
+    return _register, _get_registered_classes
 
 
-class Prisoner(metaclass=MetaPrisoner):
+register, get_registered_classes = _()
+
+
+class PrisonerAction:
+    def __init__(self, name):
+        self.__name = name
+
+    def __str__(self):
+        return self.__name
+
+    def __repr__(self):
+        return str(self)
+
+LOYAL = PrisonerAction('LOYAL')
+BETRAY = PrisonerAction('BETRAY')
+
+
+class Prisoner(abc.ABC):
     """
     prisoner base class
     all prisoner bots must inherit from the prisoner class
@@ -35,16 +44,18 @@ class Prisoner(metaclass=MetaPrisoner):
     Note! printing will not work when using do_turn
     """
 
-    def do_turn(self, history: list):
+    def __init_subclass__(cls, **kwargs):
+        register(cls)
+
+    @abc.abstractmethod
+    def do_turn(self, history: list) -> PrisonerAction:
         """
         runs a single turn and return's the prisoners choice
+
         :param history: a list of all the history so fur, each event is consisted of two elements, the first is your
-        action that turn, and the second is your opponent's action.
+            action that turn, and the second is your opponent's action.
+
         :type history: list[tuple[int, int]]
+
         :return: the action for this turn, either LOYAL or BETRAY
         """
-        raise NotImplementedError("Can't call abstract method Prisoner.do_turn")
-
-
-LOYAL = 0
-BETRAY = 1

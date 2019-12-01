@@ -28,13 +28,19 @@ def timeout(time):
 
 def get_disable_prints():
     stdout, stderr = sys.stdout, sys.stderr
+    count = [0]
 
     class __T:
         def __enter__(self):
             sys.stdout, sys.stderr = None, None
+            sys.__stdout__, sys.__stderr__ = None, None
+            count[0] += 1
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            sys.stdout, sys.stderr = stdout, stderr
+            count[0] -= 1
+            if count[0] == 0:
+                sys.stdout, sys.stderr = stdout, stderr
+                sys.__stdout__, sys.__stderr__ = stdout, stderr
 
     return __T()
 
@@ -45,7 +51,7 @@ disable_prints = get_disable_prints()
 def run_competition(bots=None, turns_per_match=100, max_bot_runtime=1):
     scores = {}
     if bots is None:
-        bots = dilemma_lib.registered_classes
+        bots = dilemma_lib.get_registered_classes()
     for i in bots:
         scores[i.__name__] = 0
     for cls1, cls2 in combinations(bots, 2):
@@ -93,7 +99,7 @@ def run_competition(bots=None, turns_per_match=100, max_bot_runtime=1):
             else:
                 if c1 not in {BETRAY, LOYAL}:
                     print(f'{cls1.__name__} returned illegal output: {c1}')
-                else:
+                if c2 not in {BETRAY, LOYAL}:
                     print(f'{cls2.__name__} returned illegal output: {c2}')
             h1.append((c1, c2))
             h2.append((c2, c1))
